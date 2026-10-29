@@ -1,0 +1,17 @@
+{
+  "session_id": "93a7b59c-96e5-482e-9428-6773e22d0234",
+  "transcript_path": "__REPO__/transcript.jsonl",
+  "cwd": "__REPO__",
+  "prompt_id": "ca29c2da-31d6-469b-babd-b29b2a16a090",
+  "permission_mode": "default",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "__REPO__/tests/Acceptance/main_thread.txt",
+    "content": "main"
+  },
+  "tool_use_id": "toolu_01GzaYHmMCRHkwmffFvDjmTh"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "nabc",
+  "owner": {
+    "name": "Antoine Lemariey",
+    "email": "contact@notabadcompany.fr"
+  },
+  "description": "Plugins Claude Code de Not a Bad Company",
+  "plugins": [
+    {
+      "name": "nabc-dev",
+      "source": "./plugins/nabc-dev",
+      "description": "Méthode de dev Not a Bad Company"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# Généré par /nabc-dev:init. Remplacer les <commands.*> par les valeurs de .claude/nabc.json
+# et compléter le setup de la stack (PHP + composer, ou Node).
+# Le parcours de référence (« bus factor ») tourne à chaque PR ; mutation et E2E complets chaque nuit.
+name: ci
+on:
+  pull_request:
+  schedule: [{ cron: "0 3 * * *" }]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # setup de la stack (PHP + composer / Node), dépendances
+      - run: <commands.gate>
+
+  e2e-smoke:
+    if: github.event_name == 'pull_request'
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # démarrage de l'appli + base de test + fixtures
+      - run: <commands.e2e_smoke>
+
+  mutation:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # setup de la stack, dépendances
+      - run: <commands.mutation>
+
+  e2e-full:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # démarrage de l'appli + base de test + fixtures
+      - run: <commands.e2e_full>

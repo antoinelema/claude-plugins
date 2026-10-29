@@ -1,0 +1,22 @@
+{
+  "stack": "laravel",
+  "paths": {
+    "domain": "app/__Domain__",
+    "application": "app/__Application__",
+    "specs": "docs/specs",
+    "acceptance_tests": "tests/Acceptance",
+    "test_dirs": ["tests", "e2e"]
+  },
+  "commands": {
+    "check_file": "",
+    "check_file_glob": "\\.php$",
+    "gate": "",
+    "e2e_smoke": "npx playwright test parcours-nouvel-utilisateur"
+  },
+  "git": {
+    "protected_branches": ["main", "production"],
+    "blocked_commands": ["netlify deploy --prod"]
+  },
+  "worktree": { "db_per_worktree": true, "db_env_var": "DB_DATABASE", "db_prefix": "testing_" },
+  "gate": { "max_attempts": 3 }
+}

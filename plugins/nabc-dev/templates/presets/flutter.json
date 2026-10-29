@@ -1,0 +1,21 @@
+{
+  "stack": "flutter",
+  "paths": {
+    "domain": "lib/domain",
+    "application": "lib/application",
+    "specs": "docs/specs",
+    "acceptance_tests": "test/acceptance",
+    "test_dirs": ["test", "integration_test"]
+  },
+  "commands": {
+    "check_file": "dart analyze {file}",
+    "check_file_glob": "\\.dart$",
+    "gate": "flutter analyze && flutter test",
+    "mutation": "",
+    "e2e_smoke": "",
+    "e2e_full": "flutter test integration_test"
+  },
+  "git": { "protected_branches": ["main"], "blocked_commands": [] },
+  "worktree": { "db_per_worktree": false, "db_env_var": "", "db_prefix": "" },
+  "gate": { "max_attempts": 3 }
+}

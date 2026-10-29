@@ -1,0 +1,10 @@
+{
+  "name": "nabc-dev",
+  "displayName": "NABC Dev",
+  "version": "0.1.0",
+  "description": "Méthode Not a Bad Company : spec BDD, tests d'acceptance figés, architecture hexagonale vérifiée, gate déterministe, revue contre la spec.",
+  "author": { "name": "Antoine Lemariey", "email": "contact@notabadcompany.fr", "url": "https://notabadcompany.fr" },
+  "homepage": "https://notabadcompany.fr/methode",
+  "license": "MIT",
+  "keywords": ["bdd", "hexagonal", "clean-architecture", "tdd", "quality-gate"]
+}

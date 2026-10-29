@@ -1,0 +1,21 @@
+{
+  "stack": "nextjs",
+  "paths": {
+    "domain": "src/domain",
+    "application": "src/application",
+    "specs": "docs/specs",
+    "acceptance_tests": "tests/acceptance",
+    "test_dirs": ["tests", "e2e"]
+  },
+  "commands": {
+    "check_file": "npx eslint --no-warn-ignored {file}",
+    "check_file_glob": "\\.(ts|tsx|js|jsx|mjs|cjs)$",
+    "gate": "npm run gate",
+    "mutation": "npx stryker run --mutate 'src/domain/**/*.ts,src/application/**/*.ts'",
+    "e2e_smoke": "npx playwright test parcours-nouvel-utilisateur",
+    "e2e_full": "npx playwright test"
+  },
+  "git": { "protected_branches": ["main"], "blocked_commands": [] },
+  "worktree": { "db_per_worktree": false, "db_env_var": "DATABASE_URL", "db_prefix": "testing_" },
+  "gate": { "max_attempts": 3 }
+}

@@ -1,0 +1,21 @@
+{
+  "stack": "astro",
+  "paths": {
+    "domain": "src/domain",
+    "application": "src/application",
+    "specs": "docs/specs",
+    "acceptance_tests": "tests/acceptance",
+    "test_dirs": ["tests", "e2e"]
+  },
+  "commands": {
+    "check_file": "npx eslint --no-warn-ignored {file}",
+    "check_file_glob": "\\.(ts|tsx|js|mjs|astro)$",
+    "gate": "npm run gate",
+    "mutation": "",
+    "e2e_smoke": "",
+    "e2e_full": "npx playwright test"
+  },
+  "git": { "protected_branches": ["main"], "blocked_commands": ["netlify deploy .*--prod"] },
+  "worktree": { "db_per_worktree": false, "db_env_var": "", "db_prefix": "" },
+  "gate": { "max_attempts": 3 }
+}
