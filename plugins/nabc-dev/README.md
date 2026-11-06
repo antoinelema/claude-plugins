@@ -16,6 +16,7 @@ Le plugin est générique : il lit la configuration de chaque projet dans `.clau
 | `/nabc-dev:init [stack]` | Configure un projet : `nabc.json`, `CLAUDE.md`, règle d'architecture, script gate, CI |
 | `/nabc-dev:feature <besoin>` | Chaîne complète avec arrêts de validation : spec → tests d'acceptance → plan → implémentation → vérification → revue → livraison |
 | `/nabc-dev:spec`, `acceptance`, `plan`, `implement`, `verify`, `review`, `finish` | Chaque étape isolée |
+| `/nabc-dev:secrets-audit` | Avant un push : secrets et données personnelles sur tout le dépôt et tout l'historique (scanner, vraies valeurs du `.env`, fichiers sensibles), avec la conduite à tenir selon que la fuite est déjà publiée ou non |
 | `/nabc-dev:parallel <chantier>` | Lots indépendants, un worktree par agent, fusion validée lot par lot |
 | `/nabc-dev:maintenance` | Session de réduction de dette (diagnostic navigateur, réparer → mesurer → couvrir → mutation → auditer → refactorer) |
 | `/nabc-dev:context-audit` | Audit mensuel de `CLAUDE.md`, agents et skills du projet |

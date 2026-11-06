@@ -12,7 +12,8 @@ Lis `.claude/nabc.json`.
 2. **Spec** : **garde-la** (documentation vivante). Passe son statut à `livrée le <date du jour>`. Si l'implémentation a précisé un comportement, vérifie que la spec le dit.
 3. **Commits** : `git log <base>..HEAD`. Vérifie :
    - messages conventionnels (`type(scope): quoi et pourquoi`) ;
-   - aucun fichier temporaire, secret, fichier généré ou artefact de test (traces, captures, état d'authentification) ;
+   - aucun fichier temporaire, fichier généré ou artefact de test (traces, captures, état d'authentification) ;
+   - secrets et données personnelles : lance `/nabc-dev:secrets-audit` — il couvre tout l'historique qui partira au push, pas seulement `<base>..HEAD` ;
    - pas de commit « wip » ou « fix tests » isolé qui mériterait d'être fusionné avec son commit d'origine : propose-le à Antoine, ne réécris pas l'historique sans accord.
 4. **Description de PR** (rends-la, ne crée pas la PR sans accord) :
 
