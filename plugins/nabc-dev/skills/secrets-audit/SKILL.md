@@ -19,7 +19,7 @@ Un push publie **tout l'historique** qui n'est pas encore sur le remote, pas seu
    ```
    Trie chaque détection : faux positif (mot de passe de test, `YOUR_TOKEN`, exemple de doc) ou réel, en regardant le contexte (`git show <commit>:<fichier>`).
 
-3. **Vraies valeurs** — le scanner ne connaît que des motifs. Pour chaque variable du `.env` local dont le nom contient KEY, SECRET, PASSWORD, TOKEN ou CLIENT_ID et dont la valeur fait au moins 8 caractères (hors `null`, placeholders), cherche la valeur exacte dans toutes les révisions avec `git grep -lF -- "$valeur" $(git rev-list --all)`, sans l'afficher. Une valeur retrouvée, surtout dans un `.env.example`, est une fuite réelle.
+3. **Vraies valeurs** — le scanner ne connaît que des motifs. Pour chaque variable du `.env` local dont le nom contient KEY, SECRET, PASSWORD, TOKEN ou CLIENT_ID et dont la valeur fait au moins 8 caractères, **écarte d'abord les placeholders** : valeur identique à celle du `.env.example`, ou de la forme `your_…`/`your-…`, `changeme`, `xxx…`, `<…>`, `test…`. Une valeur d'exemple retrouvée dans l'historique n'est pas une fuite (faux positif constaté le 2026-11-06 : `your_client_id` pris pour un vrai secret OAuth). Pour les autres, cherche la valeur exacte dans toutes les révisions avec `git grep -lF -- "$valeur" $(git rev-list --all)`, sans l'afficher. Une valeur retrouvée, surtout dans un `.env.example`, est une fuite réelle.
 
 4. **Fichiers sensibles jamais commités** — `git log --all --name-only --format= | sort -u`, puis filtre : `.env*` (hors `.env.example`), `*.sql`, `*.dump`, `*.pem`, `*.key`, `*.p12`, `*.sqlite`, `id_rsa*`, `credentials*`, exports `*.csv`/`*.xlsx`. Pour chacun, vérifie le contenu (fixture de test synthétique ou vraie donnée ?).
 
