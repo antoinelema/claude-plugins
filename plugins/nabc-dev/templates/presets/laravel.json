@@ -8,9 +8,11 @@
     "test_dirs": ["tests", "e2e"]
   },
   "commands": {
-    "check_file": "vendor/bin/phpstan analyse --no-progress --error-format=raw {file}",
-    "check_file_glob": "\\.php$",
-    "gate": "composer gate",
+    "check_files": [
+      { "glob": "\\.php$", "command": "vendor/bin/phpstan analyse --no-progress --error-format=raw {file}" },
+      { "glob": "\\.(ts|tsx|js|jsx)$", "command": "npx eslint --no-warn-ignored {file}" }
+    ],
+    "gate": "composer gate && npm run gate",
     "mutation": "vendor/bin/infection --threads=max --min-msi=80 --filter=app/__Domain__,app/__Application__",
     "e2e_smoke": "npx playwright test parcours-nouvel-utilisateur",
     "e2e_full": "npx playwright test"
