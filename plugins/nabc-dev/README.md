@@ -7,6 +7,8 @@
 
 Méthode de développement Not a Bad Company, partagée par tous les projets : spec BDD → tests d'acceptance écrits avant le code → plan → implémentation → vérification déterministe → revue contre la spec → livraison. La relecture et la fusion restent humaines.
 
+Schéma d'utilisation (couches, chaîne d'une fonctionnalité, hooks, paliers de délégation) : [`docs/schema.html`](docs/schema.html), à ouvrir dans un navigateur, ou en ligne sur https://claude.ai/artifact/DFG6mnynhpQRq97zCT8xD6 (privé). À mettre à jour quand une étape, un hook ou une skill change.
+
 Le plugin est générique : il lit la configuration de chaque projet dans `.claude/nabc.json`. Sans ce fichier, aucun hook n'agit.
 
 ## Utilisation

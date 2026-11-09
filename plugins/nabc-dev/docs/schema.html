@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Méthode nabc-dev</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one left-aligned column (max 1280px); feature flow as a step rail,
+   hooks as a session timeline inside the page's single inverse block.
+   Tokens from the Not a Bad Company design system (« Atelier coloré »). */
+:root {
+  --ink: #17181C; --ink-soft: #2E3036; --ink-muted: #4B4D55; --ink-faint: #63656D;
+  --surface: #FBFAF7; --surface-raised: #FFFFFF; --surface-subtle: #F3F1EC; --surface-sunken: #ECEAE4;
+  --inverse: #17181C; --inverse-raised: #24262C; --on-inverse: #FFFFFF; --on-inverse-muted: #D4D5DA; --line-inverse: #34363D;
+  --line: #E4E1DA; --line-strong: #17181C; --border-w: 1.5px;
+  --highlight: #2B3FD6; --on-highlight: #FFFFFF; --on-pastel: #17181C;
+  --app-soft: #C9DCC4; --app: #2E3A2B; --app-line: #A9C4A2;
+  --site-soft: #FFC9A8; --site: #4A2E1E; --site-line: #F2AA80;
+  --ia-soft: #D9CCF5; --ia: #35294F; --ia-line: #C2AFEE;
+  --sun-soft: #FFE8A3; --sun: #4A3D12;
+  --danger: #B42318; --danger-soft: #FCECEA;
+  --sans: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ink: #F4F2EE; --ink-soft: #DEDCE3; --ink-muted: #B8B6C0; --ink-faint: #8F8D99;
+  --surface: #16161B; --surface-raised: #22222A; --surface-subtle: #1C1C22; --surface-sunken: #2C2C36;
+  --inverse: #F4F2EE; --inverse-raised: #FFFFFF; --on-inverse: #16161B; --on-inverse-muted: #4B4D55; --line-inverse: #DEDCE3;
+  --line: #2E2E38; --line-strong: #4A4A55; --border-w: 1px;
+  --highlight: #FFC9A8; --on-highlight: #16161B;
+  --app-soft: #B7CDB1; --app-line: #9CB896; --site-soft: #F4B894; --site-line: #E59E75; --ia-soft: #C6B8EE; --ia-line: #AE9BE3;
+  --sun-soft: #F2D98C; --danger: #FF8A80; --danger-soft: #2E1D1D;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --ink: #F4F2EE; --ink-soft: #DEDCE3; --ink-muted: #B8B6C0; --ink-faint: #8F8D99;
+  --surface: #16161B; --surface-raised: #22222A; --surface-subtle: #1C1C22; --surface-sunken: #2C2C36;
+  --inverse: #F4F2EE; --inverse-raised: #FFFFFF; --on-inverse: #16161B; --on-inverse-muted: #4B4D55; --line-inverse: #DEDCE3;
+  --line: #2E2E38; --line-strong: #4A4A55; --border-w: 1px;
+  --highlight: #FFC9A8; --on-highlight: #16161B;
+  --app-soft: #B7CDB1; --app-line: #9CB896; --site-soft: #F4B894; --site-line: #E59E75; --ia-soft: #C6B8EE; --ia-line: #AE9BE3;
+  --sun-soft: #F2D98C; --danger: #FF8A80; --danger-soft: #2E1D1D;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--surface); color: var(--ink);
+  font: 400 17px/26px var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 40px 72px; display: grid; gap: 72px; }
+h1, h2, h3 { font-weight: 800; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(44px, 8vw, 96px); line-height: 0.98; letter-spacing: -0.045em; }
+h2 { font-size: clamp(34px, 5vw, 56px); line-height: 1; letter-spacing: -0.04em; }
+h3 { font-size: 22px; line-height: 28px; letter-spacing: -0.02em; }
+p { margin: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.82em; }
+.mark { background: var(--highlight); color: var(--on-highlight); border-radius: 0.14em; padding: 0 0.12em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.lead { font-size: 20px; line-height: 31px; color: var(--ink-muted); max-width: 760px; }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); font-size: 14px; line-height: 20px; }
+section { display: grid; gap: 32px; }
+.section-head { display: grid; gap: 14px; max-width: 860px; }
+
+/* header */
+.brand { font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.brand i { display: inline-block; width: 0.32em; height: 0.32em; border-radius: 50%; background: var(--highlight); margin-left: 2px; }
+.hero { display: grid; gap: 24px; }
+
+/* three layers */
+.layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.layer { border-radius: 28px; padding: 28px; display: grid; gap: 12px; align-content: start; color: var(--on-pastel); }
+.layer p, .layer li { color: inherit; opacity: 0.88; }
+.layer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 15px; line-height: 22px; }
+.layer .where { font-family: var(--mono); font-size: 12.5px; line-height: 18px; background: rgb(255 255 255 / 0.45); border-radius: 8px; padding: 6px 10px; justify-self: start; overflow-wrap: anywhere; }
+.pill { display: inline-block; justify-self: start; font-size: 13px; line-height: 18px; font-weight: 600; border-radius: 9999px; padding: 4px 12px; }
+.l-app { background: var(--app-soft); } .l-app .pill { background: var(--app-line); color: var(--app); }
+.l-site { background: var(--site-soft); } .l-site .pill { background: var(--site-line); color: var(--site); }
+.l-ia { background: var(--ia-soft); } .l-ia .pill { background: var(--ia-line); color: var(--ia); }
+
+/* feature flow */
+.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+.step { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0 20px; }
+.rail { display: grid; grid-template-rows: auto 1fr; justify-items: center; }
+.num { width: 44px; height: 44px; border-radius: 9999px; display: grid; place-items: center; font-weight: 800; font-size: 18px; background: var(--surface-raised); border: var(--border-w) solid var(--line-strong); color: var(--ink); }
+.rail::after { content: ""; width: 2px; background: var(--line); margin-block: 6px; min-height: 18px; }
+.step:last-child .rail::after { display: none; }
+.card { background: var(--surface-raised); border: var(--border-w) solid var(--line-strong); border-radius: 20px; padding: 18px 22px; display: grid; gap: 8px; margin-bottom: 18px; min-width: 0; }
+.card-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.agent { font-family: var(--mono); font-size: 12.5px; line-height: 18px; background: var(--surface-sunken); color: var(--ink-soft); border-radius: 8px; padding: 2px 8px; }
+.out { font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.stop { display: flex; gap: 10px; align-items: flex-start; background: var(--sun-soft); color: var(--sun); border-radius: 14px; padding: 10px 14px; font-size: 15px; line-height: 22px; }
+.stop b { color: var(--on-pastel); }
+.stop svg { flex: none; margin-top: 2px; }
+.loop { display: flex; gap: 10px; align-items: flex-start; border: var(--border-w) dashed var(--line-strong); border-radius: 14px; padding: 10px 14px; font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.loop svg { flex: none; margin-top: 2px; color: var(--ink); }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check { font-size: 13px; line-height: 18px; font-weight: 600; border: var(--border-w) solid var(--line); border-radius: 9999px; padding: 3px 10px; color: var(--ink-soft); }
+.step.human .num { background: var(--sun-soft); color: var(--on-pastel); border-color: var(--sun-soft); }
+
+/* hooks block */
+.inverse { background: var(--inverse); color: var(--on-inverse); border-radius: 36px; padding: 56px max(24px, 4vw); display: grid; gap: 32px; }
+.inverse .lead { color: var(--on-inverse-muted); }
+.timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.hook { background: var(--inverse-raised); border: 1px solid var(--line-inverse); border-radius: 24px; padding: 20px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.hook .when { font-family: var(--mono); font-size: 12px; line-height: 16px; color: var(--on-inverse-muted); letter-spacing: 0.02em; }
+.hook p { color: var(--on-inverse-muted); font-size: 15px; line-height: 22px; }
+.hook .verdict { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--on-inverse); }
+.hook .tag { justify-self: start; font-size: 12px; line-height: 16px; font-weight: 600; border-radius: 9999px; padding: 3px 10px; color: var(--on-pastel); }
+.t-app { background: var(--app-soft); } .t-site { background: var(--site-soft); } .t-ia { background: var(--ia-soft); } .t-sun { background: var(--sun-soft); }
+.prospecto { border-top: 1px solid var(--line-inverse); padding-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.prospecto div { display: grid; gap: 2px; }
+.prospecto .k { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--on-inverse-muted); }
+.prospecto .v { font-size: 30px; line-height: 34px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.prospecto .s { font-size: 14px; line-height: 20px; color: var(--on-inverse-muted); }
+
+/* other entries */
+.entries { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.entry { border: var(--border-w) solid var(--line-strong); background: var(--surface-raised); border-radius: 20px; padding: 22px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.entry .cmd { font-family: var(--mono); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.entry .whenuse { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink-faint); }
+.entry p { color: var(--ink-muted); font-size: 15px; line-height: 22px; }
+
+/* delegation tiers */
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; border: var(--border-w) solid var(--line-strong); border-radius: 28px; overflow: hidden; background: var(--surface-raised); }
+.tier { padding: 24px; display: grid; gap: 8px; align-content: start; border-right: 1px solid var(--line); }
+.tier:last-child { border-right: 0; }
+.tier .lvl { font-size: 44px; line-height: 44px; font-weight: 800; letter-spacing: -0.04em; }
+.tier p { color: var(--ink-muted); font-size: 15px; line-height: 22px; }
+.tier.now { background: var(--surface-subtle); }
+.now-badge { justify-self: start; font-size: 12px; line-height: 16px; font-weight: 600; border-radius: 9999px; padding: 3px 10px; background: var(--highlight); color: var(--on-highlight); }
+@media (max-width: 760px) { .tier { border-right: 0; border-bottom: 1px solid var(--line); } .tier:last-child { border-bottom: 0; } }
+
+footer { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+@media (prefers-reduced-motion: no-preference) { .card, .entry, .hook { transition: transform 200ms, box-shadow 200ms; } .entry:hover { transform: translateY(-2px); box-shadow: 0 6px 16px -6px rgb(23 24 28 / 0.18); } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="brand">nabc-dev<i aria-hidden="true"></i></div>
+    <h1>Du besoin <span class="mark">à la fusion</span>, sans rien laisser au hasard.</h1>
+    <p class="lead">Le plugin Claude Code de Not a Bad Company. La qualité est garantie par des scripts, pas par des consignes : ce que Claude oublie, un hook le rattrape. La relecture et la fusion restent humaines.</p>
+  </header>
+
+  <section aria-labelledby="couches">
+    <div class="section-head">
+      <h2 id="couches">Trois couches</h2>
+      <p class="muted">Les invariants valent partout, le plugin est identique d'un projet à l'autre, et chaque projet ne décrit que ce qui lui est propre.</p>
+    </div>
+    <div class="layers">
+      <article class="layer l-app">
+        <span class="pill">Partout</span>
+        <h3>La guideline générale</h3>
+        <p>Les règles qui ne dépendent d'aucun projet : français, commits conventionnels, tests d'abord, rien n'est « fait » sans preuve.</p>
+        <span class="where">claude-plugins/guideline/CLAUDE.md</span>
+      </article>
+      <article class="layer l-site">
+        <span class="pill">Le plugin</span>
+        <h3>Les garanties mécaniques</h3>
+        <ul>
+          <li>4 hooks qui agissent sans qu'on les appelle</li>
+          <li>7 agents, chacun avec un droit limité</li>
+          <li>des skills pour chaque étape et chaque chantier</li>
+        </ul>
+        <span class="where">/plugin install nabc-dev@nabc</span>
+      </article>
+      <article class="layer l-ia">
+        <span class="pill">Par projet</span>
+        <h3>L'application sur mesure</h3>
+        <p>Les commandes et chemins du projet, un CLAUDE.md court, une gate rapide. Sans ce fichier, aucun hook n'agit.</p>
+        <span class="where">.claude/nabc.json · /nabc-dev:init</span>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="feature">
+    <div class="section-head">
+      <h2 id="feature">Une fonctionnalité : <code>/nabc-dev:feature</code></h2>
+      <p class="muted">Chaque étape est confiée à un agent en contexte séparé. Les pastilles jaunes sont les moments où la chaîne s'arrête et attend Antoine.</p>
+    </div>
+    <ol class="flow">
+      <li class="step human">
+        <div class="rail"><span class="num">1</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Spec BDD</h3><span class="agent">spec-analyst</span></div>
+          <p class="out">Scénarios Given / When / Then écrits depuis le besoin, le code réel et les ADR. Les questions remontent avant la rédaction.</p>
+          <div class="stop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span><b>Arrêt.</b> Antoine valide la spec explicitement.</span></div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="rail"><span class="num">2</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Tests d'acceptance</h3><span class="agent">test-writer</span></div>
+          <p class="out">Un test par scénario, rouge pour la bonne raison. Ensuite ils sont figés : le hook interdit à tout autre agent de les modifier.</p>
+        </div>
+      </li>
+      <li class="step">
+        <div class="rail"><span class="num">3</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Plan</h3><span class="agent">implementation-planner</span></div>
+          <p class="out">Changements minimaux, fichier par fichier. Une « question de spec » dans le plan renvoie à Antoine, et à l'étape 1 si la réponse change la spec.</p>
+        </div>
+      </li>
+      <li class="step">
+        <div class="rail"><span class="num">4</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Implémentation</h3><span class="agent">code-implementer</span></div>
+          <p class="out">Tests unitaires d'abord, jusqu'à ce que les tests d'acceptance passent. À chaque fichier écrit, l'analyse statique tourne.</p>
+        </div>
+      </li>
+      <li class="step">
+        <div class="rail"><span class="num">5</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Vérification</h3><span class="agent">/nabc-dev:verify</span></div>
+          <p class="out">Des tests verts ne prouvent pas que le produit marche : la vérification finit toujours dans un vrai navigateur.</p>
+          <div class="checks"><span class="check">gate</span><span class="check">mutation</span><span class="check">CRAP des méthodes modifiées</span><span class="check">parcours E2E de référence</span><span class="check">navigateur réel</span></div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="rail"><span class="num">6</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Revue contre la spec</h3><span class="agent">code-reviewer</span></div>
+          <p class="out">Contexte neuf : l'agent reçoit la spec et le diff, rien d'autre. Il juge le résultat, pas les intentions. Verdict CONFORME ou À CORRIGER.</p>
+          <div class="loop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20 9a8 8 0 0 0-14.6-3M4 15a8 8 0 0 0 14.6 3"/></svg><span>À CORRIGER → <code>code-refactorer</code>, puis retour à l'étape 5. Au troisième aller-retour, arrêt et intervention manuelle.</span></div>
+        </div>
+      </li>
+      <li class="step human">
+        <div class="rail"><span class="num">7</span></div>
+        <div class="card">
+          <div class="card-top"><h3>Livraison</h3><span class="agent">/nabc-dev:finish</span></div>
+          <p class="out">Audit des secrets sur tout l'historique, spec marquée livrée, commits vérifiés, description de PR, worktrees nettoyés.</p>
+          <div class="stop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span><b>Arrêt.</b> La fusion est faite par Antoine.</span></div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="inverse" aria-labelledby="hooks">
+    <div class="section-head">
+      <h2 id="hooks">Ce qui tourne tout seul</h2>
+      <p class="lead">Les quatre hooks agissent à chaque session, qu'on lance une skill ou qu'on travaille en direct. Ce sont eux qui rendent la délégation possible.</p>
+    </div>
+    <div class="timeline">
+      <article class="hook">
+        <span class="when">SessionStart</span>
+        <h3>Photo de départ</h3>
+        <p>État du dépôt mémorisé, base de test propre à chaque worktree, court contexte injecté.</p>
+        <span class="tag t-app">observe</span>
+      </article>
+      <article class="hook">
+        <span class="when">PreToolUse · avant chaque action</span>
+        <h3>Le garde</h3>
+        <p><code>--no-verify</code>, push sur <code>main</code>, commandes interdites, test d'acceptance touché hors test-writer, code de production touché par le test-writer.</p>
+        <span class="verdict">Bloqué avant exécution.</span>
+      </article>
+      <article class="hook">
+        <span class="when">PostToolUse · après chaque fichier</span>
+        <h3>L'analyse du fichier</h3>
+        <p>Chaque analyse dont le motif correspond au fichier : PHPStan pour le PHP, ESLint pour le front.</p>
+        <span class="verdict">Erreur renvoyée à Claude, qui corrige.</span>
+      </article>
+      <article class="hook">
+        <span class="when">Stop · quand Claude veut s'arrêter</span>
+        <h3>La gate</h3>
+        <p>Si la session a modifié le dépôt, la gate du projet tourne. Rouge : Claude doit continuer.</p>
+        <span class="verdict">Après 3 échecs : intervention manuelle.</span>
+      </article>
+    </div>
+    <div class="prospecto" aria-label="Valeurs mesurées sur Prospecto">
+      <div><span class="k">Gate Prospecto</span><span class="v">18 s</span><span class="s">PHPStan, suites Domain · Application · Acceptance, typecheck, lint, Vitest</span></div>
+      <div><span class="k">Analyse d'un fichier PHP</span><span class="v">2 s</span><span class="s">PHPStan niveau 8 dans Sail</span></div>
+      <div><span class="k">Dette tolérée en baseline</span><span class="v">34 + 3</span><span class="s">erreurs de types et de lint existantes ; toute nouvelle erreur fait échouer</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="entrees">
+    <div class="section-head">
+      <h2 id="entrees">Les autres entrées</h2>
+      <p class="muted">Lancées à la demande, jamais automatiquement.</p>
+    </div>
+    <div class="entries">
+      <article class="entry"><span class="cmd">/nabc-dev:init</span><span class="whenuse">Une fois par projet</span><p>Écrit <code>nabc.json</code> depuis un preset, la gate, le CLAUDE.md court et la CI. Ne remplace rien sans montrer le diff.</p></article>
+      <article class="entry"><span class="cmd">/nabc-dev:crap [--changed]</span><span class="whenuse">Pour savoir où un changement est dangereux</span><p>CC² × (1 − couverture)³ + CC par méthode, pire en tête, avec l'action : couvrir jusqu'à N %, ou découper.</p></article>
+      <article class="entry"><span class="cmd">/nabc-dev:maintenance</span><span class="whenuse">Après une phase de rush</span><p>Réparer → mesurer → couvrir → mutation → auditer → refactorer, avec un critère d'acceptation à chaque marche.</p></article>
+      <article class="entry"><span class="cmd">/nabc-dev:parallel</span><span class="whenuse">Un chantier en lots indépendants</span><p>Un worktree par agent, fusion validée lot par lot.</p></article>
+      <article class="entry"><span class="cmd">/nabc-dev:secrets-audit</span><span class="whenuse">Avant un push</span><p>Secrets et données personnelles sur tout le dépôt et tout l'historique, avec la conduite à tenir si la fuite est déjà publiée.</p></article>
+      <article class="entry"><span class="cmd">/nabc-dev:context-audit</span><span class="whenuse">Une fois par mois</span><p>Retire du CLAUDE.md, des agents et des skills les chiffres périmés, les cartes du code et les chemins morts.</p></article>
+    </div>
+  </section>
+
+  <section aria-labelledby="paliers">
+    <div class="section-head">
+      <h2 id="paliers">Paliers de délégation</h2>
+      <p class="muted">On monte d'un palier quand le taux de reprise du palier actuel est assez bas.</p>
+    </div>
+    <div class="tiers">
+      <article class="tier now"><span class="lvl">0</span><span class="now-badge">Aujourd'hui</span><h3>En direct</h3><p>Antoine pilote, les hooks veillent : garde, analyse de fichier, gate.</p></article>
+      <article class="tier"><span class="lvl">1</span><h3>Tâches bornées</h3><p>Un correctif, une mesure, un audit, confiés avec un critère de fin.</p></article>
+      <article class="tier"><span class="lvl">2</span><h3>Fonctionnalités</h3><p><code>/nabc-dev:feature</code> : spec et tests d'acceptance validés par Antoine, le reste délégué.</p></article>
+      <article class="tier"><span class="lvl">3</span><h3>Arrière-plan</h3><p>Plusieurs chantiers en parallèle, en worktree, fusion humaine.</p></article>
+    </div>
+  </section>
+
+  <footer>
+    <span class="brand">nabc-dev<i aria-hidden="true"></i></span>
+    <span class="faint">Dépôt <code>~/repo/claude-plugins</code> · marketplace <code>nabc</code></span>
+  </footer>
+</div>
+</body>
+</html>
