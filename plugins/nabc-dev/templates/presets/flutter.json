@@ -17,5 +17,9 @@
   },
   "git": { "protected_branches": ["main"], "blocked_commands": [] },
   "worktree": { "db_per_worktree": false, "db_env_var": "", "db_prefix": "" },
-  "gate": { "max_attempts": 3 }
+  "gate": { "max_attempts": 3 },
+  "crap": {
+    "threshold": 30,
+    "sources": []
+  }
 }

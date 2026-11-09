@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1">
+  <project timestamp="1">
+    <package name="App">
+      <file name="/var/www/html/app/Risky.php">
+        <class name="App\Risky" namespace="App">
+          <metrics complexity="13" methods="2" coveredmethods="1"/>
+        </class>
+        <line num="10" type="method" name="decide" visibility="public" complexity="12" crap="156" count="0"/>
+        <line num="11" type="stmt" count="0"/>
+        <line num="12" type="stmt" count="0"/>
+        <line num="30" type="method" name="name" visibility="public" complexity="1" crap="1" count="3"/>
+        <line num="31" type="stmt" count="3"/>
+      </file>
+    </package>
+    <file name="/var/www/html/app/Half.php">
+      <class name="App\Half" namespace="App"/>
+      <line num="5" type="method" name="split" visibility="public" complexity="40" crap="45" count="2"/>
+      <line num="6" type="stmt" count="2"/>
+      <line num="7" type="stmt" count="2"/>
+      <line num="8" type="stmt" count="2"/>
+      <line num="9" type="stmt" count="0"/>
+    </file>
+  </project>
+</coverage>

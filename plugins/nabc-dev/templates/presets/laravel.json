@@ -17,5 +17,12 @@
   },
   "git": { "protected_branches": ["main", "production"], "blocked_commands": [] },
   "worktree": { "db_per_worktree": true, "db_env_var": "DB_DATABASE", "db_prefix": "testing_" },
-  "gate": { "max_attempts": 3 }
+  "gate": { "max_attempts": 3 },
+  "crap": {
+    "threshold": 30,
+    "sources": [
+      { "label": "php", "format": "clover", "command": "php -d pcov.enabled=1 -d xdebug.mode=off vendor/bin/phpunit --no-progress --coverage-clover .metrics/clover.xml", "report": ".metrics/clover.xml" },
+      { "label": "js", "format": "crapper", "command": "uvx --from git+https://github.com/unclebob/crapper@6fd92c4c9bcc56efb64a2f8743d5a2993bcfd42d crapper --root . -s resources/js", "report": ".metrics/crap.edn" }
+    ]
+  }
 }

@@ -2,6 +2,7 @@
 
 ## Non publiée
 
+- Skill `crap` et `scripts/crap.py` : score CRAP (`CC² × (1 − couverture)³ + CC`) par méthode, pire en tête, avec l'action conseillée (couvrir jusqu'à N % ou découper quand CC dépasse le seuil). Sources fusionnées : Clover de PHPUnit (PHP, chemins de conteneur ramenés au projet) et [unclebob/crapper](https://github.com/unclebob/crapper) épinglé par commit (TS/JS, Python, Go…). `--changed` limite aux fichiers modifiés depuis la base. Section `crap` dans les presets ; branchée dans `verify` et `maintenance`.
 - Skill `secrets-audit` : audit avant push sur tout l'historique — gitleaks (image Docker si absent), recherche des vraies valeurs du `.env` (le scanner ne voit que des motifs), en écartant d'abord les placeholders identiques au `.env.example`, fichiers sensibles, données personnelles ; distingue fuite déjà publiée (rotation) et locale (retrait avant push). Appelée par `finish`.
 - Guard : la session principale ne modifie plus les tests d'acceptance (contournement explicite : `NABC_ALLOW_ACCEPTANCE_EDIT=1` au lancement). Le champ `agent_type` a été vérifié sur un payload réel (Claude Code 2.1.312) : présent dans un sous-agent, absent de la session principale.
 - Tests : fixtures `tests/fixtures/payloads/` tirées de payloads PreToolUse réels.

@@ -9,6 +9,7 @@ Lis `.claude/nabc.json`. Exécute dans l'ordre, sans en sauter ; une commande ab
 
 1. **Gate** — `commands.gate`. Rouge : arrête-toi, rapporte la sortie ; la vérification reprend après correction.
 2. **Mutation** — `commands.mutation`, restreinte si l'outil le permet aux fichiers de `paths.domain` et `paths.application` modifiés depuis la base (`git diff --name-only <base>...HEAD`). Rapporte le score et les mutants survivants les plus significatifs (ce qu'ils révèlent : test manquant ou assertion trop faible).
+2 bis. **CRAP** — si `crap.sources` est configuré : `python3 ../../scripts/crap.py --changed <base>` (chemin relatif au dossier de cette skill). Une méthode modifiée au-dessus du seuil est un constat, avec l'action indiquée (couvrir ou découper).
 3. **Parcours de référence** — `commands.e2e_smoke`. Ne le lance jamais en même temps qu'une autre suite qui utilise la même base de données. S'il est rouge, c'est prioritaire sur tout le reste.
 4. **Navigateur** — ouvre l'application dans un vrai navigateur (Claude in Chrome, chrome-devtools ou Playwright en mode visible) et suis le parcours utilisateur concerné par le changement, comme un utilisateur :
    - pas de rechargement ni de `goto` après la connexion ;
@@ -20,6 +21,7 @@ Lis `.claude/nabc.json`. Exécute dans l'ordre, sans en sauter ; une commande ab
 ```
 Gate            : vert | rouge
 Mutation        : <score> | non configurée — survivants notables : …
+CRAP            : <n> méthodes modifiées au-dessus du seuil | aucune | non configuré
 Parcours E2E    : vert | rouge | non configuré
 Navigateur      : <parcours suivi> — OK | constats : …
 Non vérifié     : <ce qui n'a pas pu l'être, et pourquoi>

@@ -17,5 +17,11 @@
   },
   "git": { "protected_branches": ["main"], "blocked_commands": ["netlify deploy .*--prod"] },
   "worktree": { "db_per_worktree": false, "db_env_var": "", "db_prefix": "" },
-  "gate": { "max_attempts": 3 }
+  "gate": { "max_attempts": 3 },
+  "crap": {
+    "threshold": 30,
+    "sources": [
+      { "label": "ts", "format": "crapper", "command": "uvx --from git+https://github.com/unclebob/crapper@6fd92c4c9bcc56efb64a2f8743d5a2993bcfd42d crapper --root . -s src", "report": ".metrics/crap.edn" }
+    ]
+  }
 }

@@ -68,7 +68,9 @@ Produire une liste classée par **risque × couverture actuelle** :
 | Classe | Lignes % | Méthodes % | Risque (financier / sécurité / données) |
 |---|---|---|---|
 
-Critère : rapport trié par (lignes manquantes × risque) décroissant.
+Lancer aussi `/nabc-dev:crap` : le score CRAP croise complexité et couverture par méthode, et son action (couvrir / découper) alimente directement les phases 3 et 6.3.
+
+Critère : rapport trié par (lignes manquantes × risque) décroissant, et rapport CRAP.
 
 ### Phase 3 — Couvrir la logique métier
 
@@ -110,7 +112,7 @@ Dans cet ordre, suite verte entre chaque. Agent : `nabc-dev:code-refactorer` (ne
 
 1. **Découper les fichiers de test monolithiques** par scénario. Créer d'abord, en séquence, les supports partagés (TestCase de domaine avec constantes, un trait par API externe simulée, builders non persistés) ; puis un agent par fichier source, qui garde chaque méthode de test (renommer oui, supprimer non), remplace mocks et chaînes magiques par les supports, et supprime le monolithe. Critère : même nombre de tests, tous verts, plus de mocks dupliqués.
 2. **Chaînes magiques → enums** (enums typés PHP, unions littérales TS, StrEnum Python). Cast ORM là où l'ensemble de valeurs est fermé ; les réponses HTTP continuent d'émettre des chaînes ; le schéma de base ne change pas. Critère : valeurs identiques octet pour octet ; suite verte.
-3. **Extraire les points chauds** retenus à l'audit : méthodes longues → collaborateurs dédiés ; séquences répétées → flux partagé ; cascades `if/elseif` par plateforme → stratégie avec registre ; méthodes-dieux → pipeline d'étapes. Un agent par point chaud, en worktree ; comportement identique, tests existants inchangés ; la classe d'origine délègue ; nouveau collaborateur couvert comme en phase 3. Critère : complexité par méthode ≤ 10, tests verts.
+3. **Extraire les points chauds** retenus à l'audit : méthodes longues → collaborateurs dédiés ; séquences répétées → flux partagé ; cascades `if/elseif` par plateforme → stratégie avec registre ; méthodes-dieux → pipeline d'étapes. Un agent par point chaud, en worktree ; comportement identique, tests existants inchangés ; la classe d'origine délègue ; nouveau collaborateur couvert comme en phase 3. Critère : complexité par méthode ≤ 10, CRAP sous `crap.threshold` (`crap.py --changed`), tests verts.
 4. **Externaliser la configuration** : constantes de données volumineuses → fichiers de config ; prompts et gabarits multilignes → vues / templates ; délais et limites magiques → clés de config. Critère : les services perdent leurs données en ligne ; tests verts.
 
 ## Parallélisation
@@ -123,7 +125,7 @@ Dans cet ordre, suite verte entre chaque. Agent : `nabc-dev:code-refactorer` (ne
 
 Toujours finir par `docs/maintenance-<AAAA-MM>.md` :
 
-- métriques avant / après (tests, couverture, score de mutation, tailles de fichiers) ;
+- métriques avant / après (tests, couverture, score de mutation, nombre de méthodes au-dessus du seuil CRAP, tailles de fichiers) ;
 - résultats de la phase 0b : E2E, parcours de référence, une ligne par contrôle ;
 - causes racines de chaque groupe d'échecs, avec les commits ;
 - classes couvertes, et classes restées sous le seuil avec la raison ;
