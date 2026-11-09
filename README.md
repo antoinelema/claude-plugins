@@ -9,7 +9,7 @@ Plugins Claude Code de Not a Bad Company.
 ## Installation
 
 ```bash
-/plugin marketplace add <compte-github>/claude-plugins
+/plugin marketplace add antoinelema/claude-plugins
 /plugin install nabc-dev@nabc
 ```
 

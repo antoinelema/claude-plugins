@@ -1,7 +1,7 @@
 # nabc-dev
 
 ```bash
-/plugin marketplace add <compte-github>/claude-plugins
+/plugin marketplace add antoinelema/claude-plugins
 /plugin install nabc-dev@nabc
 ```
 
