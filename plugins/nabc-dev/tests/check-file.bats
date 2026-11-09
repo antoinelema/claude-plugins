@@ -55,6 +55,13 @@ file_input() { jq -nc --arg cwd "$REPO" --arg f "$REPO/$1" '{cwd:$cwd,session_id
   [[ "$output" == *"nouvelle"* ]]
 }
 
+@test "{relfile} : chemin depuis la racine du projet (outil en conteneur)" {
+  set_cfg '.commands.check_files = [{glob: "\\.php$", command: "echo dans-le-conteneur {relfile}; exit 1"}]'
+  run bash "$SCRIPTS/check-file.sh" <<<"$(file_input app/A.php)"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"dans-le-conteneur app/A.php"* ]]
+}
+
 @test "check_files tous verts : exit 0" {
   set_cfg '.commands.check_files = [{glob: "\\.php$", command: "test -f {file}"}]'
   run bash "$SCRIPTS/check-file.sh" <<<"$(file_input app/A.php)"

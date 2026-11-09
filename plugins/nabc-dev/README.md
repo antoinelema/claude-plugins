@@ -33,7 +33,7 @@ Agents (`nabc-dev:<nom>`) : `spec-analyst`, `test-writer`, `implementation-plann
 | `SessionStart` | `session-start.sh` | Photo de l'état du dépôt, base de test par worktree, court contexte injecté |
 | `CwdChanged` | `session-start.sh --env-only` | Réexporte la base de test en entrant dans un worktree |
 | `PreToolUse` | `guard.sh` | Bloque `--no-verify` / `commit -n`, push sur branche protégée, `git.blocked_commands`, toute modification des tests d'acceptance hors test-writer (session principale comprise, sauf lancement avec `NABC_ALLOW_ACCEPTANCE_EDIT=1` ; jamais pour l'implémenteur et le refactoreur), le test-writer qui touche au code de production. Plante → action bloquée |
-| `PostToolUse` | `check-file.sh` | Analyse statique du fichier modifié : chaque entrée de `commands.check_files` dont le `glob` correspond (plus l'ancien couple `check_file` / `check_file_glob`), erreurs renvoyées à Claude |
+| `PostToolUse` | `check-file.sh` | Analyse statique du fichier modifié : chaque entrée de `commands.check_files` dont le `glob` correspond (plus l'ancien couple `check_file` / `check_file_glob`) ; `{file}` = chemin absolu, `{relfile}` = chemin depuis la racine (outil en conteneur, Sail). Erreurs renvoyées à Claude |
 | `Stop` | `stop-gate.sh` | Si la session a modifié le dépôt : lance `commands.gate`. Rouge → Claude continue. Après `gate.max_attempts` échecs → « intervention manuelle requise » |
 
 Dépendances : `bash`, `jq`, `git`, `realpath` (GNU coreutils). Pour `/nabc-dev:crap` : `python3` ≥ 3.10, un pilote de couverture PHP (PCOV), `uv` pour la source crapper.

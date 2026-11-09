@@ -2,6 +2,8 @@
 # PostToolUse: static analysis of the edited file; errors are fed back to Claude.
 # Checks: commands.check_files [{glob, command}] plus the legacy pair
 # commands.check_file / commands.check_file_glob. Every matching check runs.
+# {file} is the absolute path, {relfile} the path from the project root
+# (for tools running in a container, e.g. Sail).
 # shellcheck source=lib.sh
 source "$(dirname "$0")/lib.sh"
 has_config || exit 0
@@ -23,6 +25,7 @@ while IFS= read -r check; do
   [[ -n "$glob" && ! "$FILE" =~ $glob ]] && continue
   tpl="$(jq -r '.command' <<<"$check")"
   cmd="${tpl//\{file\}/$(printf '%q' "$FILE")}"
+  cmd="${cmd//\{relfile\}/$(printf '%q' "$(relpath "$FILE")")}"
   if ! out="$(cd "$ROOT" && bash -c "$cmd" 2>&1)"; then
     echo "Analyse statique en échec sur $(relpath "$FILE") ($tpl) :" >&2
     tail -n 40 <<<"$out" >&2
