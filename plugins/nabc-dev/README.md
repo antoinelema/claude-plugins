@@ -62,6 +62,8 @@ Dépendances : `bash`, `jq`, `git`, `realpath` (GNU coreutils). Pour `/nabc-dev:
 }
 ```
 
+Source `crapper` sur un front Vitest : déclarer `@vitest/coverage-v8` en devDependency **à la version exacte de Vitest**. Sans lui, crapper l'installe par `npm install --no-save --no-package-lock`, qui re-résout tout `node_modules` hors du verrou sans trace dans `git status` ; `crap.py` refuse donc la source tant qu'il manque (sortie 1). Garde-fou général : si une commande de source modifie `node_modules/.package-lock.json`, `crap.py` l'annonce et sort en 3 — lancer `npm ci` avant toute autre vérification.
+
 ## Tests
 
 ```bash
