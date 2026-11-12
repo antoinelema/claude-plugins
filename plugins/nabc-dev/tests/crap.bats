@@ -101,3 +101,83 @@ crap() { run python3 "$SCRIPTS/crap.py" --root "$REPO" "$@"; }
   [ "$status" -eq 1 ]
   [[ "$output" == *"CRAP non configuré"* ]]
 }
+
+# Vitest package as in prospecto on 2026-11-12: vitest ^4.1.10 resolved to 4.1.12.
+# vitest_package <provider declared: yes|no> [installed provider version]
+vitest_package() {
+  local deps='{vitest: "^4.1.10"}'
+  [ "$1" = yes ] && deps='{vitest: "^4.1.10", "@vitest/coverage-v8": "4.1.12"}'
+  jq -n "{name: \"p\", private: true, scripts: {test: \"vitest run\"}, devDependencies: $deps}" >"$REPO/package.json"
+  mkdir -p "$REPO/node_modules/vitest"
+  echo '{"name":"vitest","version":"4.1.12"}' >"$REPO/node_modules/vitest/package.json"
+  if [ -n "${2:-}" ]; then
+    mkdir -p "$REPO/node_modules/@vitest/coverage-v8"
+    echo "{\"name\":\"@vitest/coverage-v8\",\"version\":\"$2\"}" >"$REPO/node_modules/@vitest/coverage-v8/package.json"
+  fi
+  echo '{"name":"p","lockfileVersion":3,"packages":{}}' >"$REPO/node_modules/.package-lock.json"
+  set_cfg ".crap.sources[1].command = \"touch lance.txt && cp '$FIX/crap.edn' fixtures/\""
+}
+
+@test "crapper sur Vitest sans @vitest/coverage-v8 déclaré : source refusée, sortie 1, rien lancé" {
+  vitest_package no
+  crap
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"[js] source refusée"* ]]
+  [[ "$output" == *"Déclarer @vitest/coverage-v8@4.1.12 en devDependency"* ]]
+  [[ "$output" == *"--no-package-lock"* ]]
+  [ ! -f "$REPO/lance.txt" ]
+  # the stale report on disk is not passed off as a fresh measure
+  [[ "$output" != *"RadarTab"* ]]
+  [[ "$output" == *"App\\Risky::decide"* ]]
+}
+
+@test "crapper sur Vitest, @vitest/coverage-v8 déclaré mais pas installé : refusée, npm ci" {
+  vitest_package yes
+  crap
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"absent de node_modules : lancer \`npm ci\`"* ]]
+  [ ! -f "$REPO/lance.txt" ]
+}
+
+@test "crapper sur Vitest, @vitest/coverage-v8 à une autre version que vitest : refusée" {
+  vitest_package yes 4.0.0
+  crap
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"@vitest/coverage-v8 4.0.0 installé pour vitest 4.1.12"* ]]
+  [ ! -f "$REPO/lance.txt" ]
+}
+
+@test "crapper sur Vitest, @vitest/coverage-v8 déclaré et installé à la version de vitest : lancée" {
+  vitest_package yes 4.1.12
+  crap
+  [ "$status" -eq 2 ]
+  [ -f "$REPO/lance.txt" ]
+  [[ "$output" == *"RadarTab"* ]]
+  [[ "$output" != *"refusée"* ]]
+  [[ "$output" != *"node_modules"* ]]
+}
+
+@test "package sans Vitest : pas d'exigence sur @vitest/coverage-v8" {
+  echo '{"name":"p","scripts":{"test":"jest"}}' >"$REPO/package.json"
+  set_cfg ".crap.sources[1].command = \"touch lance.txt\""
+  crap
+  [ -f "$REPO/lance.txt" ]
+  [[ "$output" != *"refusée"* ]]
+}
+
+@test "une commande de source qui modifie node_modules : avertissement et sortie 3" {
+  vitest_package yes 4.1.12
+  set_cfg '.crap.sources[0].command = "echo changed >> node_modules/.package-lock.json"'
+  crap
+  [ "$status" -eq 3 ]
+  [[ "$output" == *"[php] ATTENTION : la commande a modifié node_modules"* ]]
+  [[ "$output" == *"npm ci"* ]]
+  [[ "$output" != *"[js] ATTENTION"* ]]
+}
+
+@test "node_modules créé par une commande de source : avertissement et sortie 3" {
+  set_cfg '.crap.sources[0].command = "mkdir -p node_modules && echo {} > node_modules/.package-lock.json"'
+  crap
+  [ "$status" -eq 3 ]
+  [[ "$output" == *"[php] ATTENTION : la commande a modifié node_modules"* ]]
+}

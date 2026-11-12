@@ -13,13 +13,24 @@ first. Two report formats:
 - `crapper` : `.metrics/crap.edn` written by github.com/unclebob/crapper
               (TypeScript, JavaScript, Python, Go, Java, Rust, Clojure).
 
+A measure must never change the project's dependencies. crapper installs
+`@vitest/coverage-v8` itself when it is missing, with
+`npm install --no-save --no-package-lock`, which re-resolves the whole
+`node_modules` outside the lockfile. So a `crapper` source on a Vitest package
+is refused unless the provider is declared and installed at Vitest's version,
+and every source command is checked against the fingerprint of
+`node_modules/.package-lock.json` (npm's hidden lockfile, rewritten on any
+install).
+
 Exit codes: 0 under the threshold, 2 when an entry is above it, 1 on a
-configuration error. Python standard library only.
+configuration error (a refused source included), 3 when a source command
+changed `node_modules`. Python standard library only.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -29,6 +40,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 DEFAULT_THRESHOLD = 30.0
+VITEST_PROVIDER = "@vitest/coverage-v8"
+# Same list crapper uses to decide that a package runs Vitest.
+VITEST_CONFIGS = tuple(
+    f"vitest.config.{ext}" for ext in ("ts", "mts", "cts", "js", "mjs", "cjs")
+)
 EDN_ENTRY = re.compile(
     r'\{:name "((?:[^"\\]|\\.)*)", :namespace "((?:[^"\\]|\\.)*)", '
     r":complexity (\d+), :coverage ([\d.]+|nil), :crap ([\d.]+|nil)\}"
@@ -165,6 +181,67 @@ def is_changed(entry: Entry, files: set[str]) -> bool:
     return False
 
 
+def read_json(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def installed_version(root: Path, package: str) -> str | None:
+    manifest = read_json(root / "node_modules" / package / "package.json")
+    version = (manifest or {}).get("version")
+    return version if isinstance(version, str) else None
+
+
+def vitest_provider_problem(source: dict, root: Path) -> str | None:
+    """Why a crapper source cannot run without crapper installing packages, or None."""
+    if source.get("format") != "crapper" or not source.get("command"):
+        return None
+    package = read_json(root / "package.json")
+    if package is None:
+        return None
+    declared: dict = {}
+    for field in ("dependencies", "devDependencies"):
+        if isinstance(package.get(field), dict):
+            declared.update(package[field])
+    scripts = package.get("scripts") if isinstance(package.get("scripts"), dict) else {}
+    uses_vitest = (
+        "vitest" in declared
+        or "vitest" in str(scripts.get("test", ""))
+        or any((root / name).is_file() for name in VITEST_CONFIGS)
+    )
+    if not uses_vitest:
+        return None
+    vitest = installed_version(root, "vitest")
+    wanted = f"{VITEST_PROVIDER}@{vitest}" if vitest else f"{VITEST_PROVIDER} (version exacte de vitest)"
+    why = (
+        "sans lui, crapper l'installe par `npm install --no-save --no-package-lock`, "
+        "qui re-résout tout node_modules hors du verrou sans rien laisser dans git status : "
+        "gate, build et E2E tourneraient ensuite sur d'autres dépendances que `npm ci`."
+    )
+    if VITEST_PROVIDER not in declared:
+        return f"{VITEST_PROVIDER} n'est pas déclaré dans package.json. Déclarer {wanted} en devDependency ; {why}"
+    provider = installed_version(root, VITEST_PROVIDER)
+    if provider is None:
+        return f"{VITEST_PROVIDER} est déclaré mais absent de node_modules : lancer `npm ci` ; {why}"
+    if vitest and provider != vitest:
+        return (
+            f"{VITEST_PROVIDER} {provider} installé pour vitest {vitest} : "
+            f"déclarer {wanted} (même version exacte que vitest) puis `npm install`."
+        )
+    return None
+
+
+def lock_fingerprint(root: Path) -> str | None:
+    """npm rewrites node_modules/.package-lock.json on every install."""
+    try:
+        return hashlib.sha256((root / "node_modules" / ".package-lock.json").read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
 def run_source(source: dict, root: Path) -> str | None:
     command = source.get("command", "")
     if not command:
@@ -251,12 +328,29 @@ def main(argv: list[str]) -> int:
 
     (root / ".metrics").mkdir(exist_ok=True)
     entries: list[Entry] = []
+    refused = False
+    touched_node_modules: list[str] = []
     for source in sources:
         label = source.get("label") or source.get("format", "?")
         if not args.no_run:
+            problem = vitest_provider_problem(source, root)
+            if problem:
+                # An old report on disk would pass for a fresh measure: skip it too.
+                print(f"[{label}] source refusée : {problem}\n", file=sys.stderr)
+                refused = True
+                continue
+            before = lock_fingerprint(root)
             failure = run_source(source, root)
             if failure:
                 print(f"[{label}] {failure}\n", file=sys.stderr)
+            if lock_fingerprint(root) != before:
+                touched_node_modules.append(label)
+                print(
+                    f"[{label}] ATTENTION : la commande a modifié node_modules "
+                    "(node_modules/.package-lock.json a changé). Les dépendances installées ne "
+                    "sont plus celles du verrou : lancer `npm ci` avant toute gate, build ou E2E.\n",
+                    file=sys.stderr,
+                )
         try:
             entries += load_source(source, root)
         except (FileNotFoundError, ValueError, ET.ParseError) as error:
@@ -275,6 +369,10 @@ def main(argv: list[str]) -> int:
         selected = [e for e in entries if is_changed(e, files)]
 
     print(format_report(selected, len(entries), threshold, args.top))
+    if touched_node_modules:
+        return 3
+    if refused:
+        return 1
     over = any(e.crap is not None and e.crap > threshold for e in selected)
     return 2 if over else 0
 
